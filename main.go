@@ -30,7 +30,6 @@ var (
 
 type assemblyMsg struct{
   code string
-  err error
 }
 
 func createContent(sub chan assemblyMsg, filePath *string) tea.Cmd {
@@ -39,17 +38,18 @@ func createContent(sub chan assemblyMsg, filePath *string) tea.Cmd {
     for {
       fileInfo, err := os.Stat(*filePath)
       if err != nil {
-        sub <- assemblyMsg{ code: fmt.Sprintf("%v\n", err), err: err }
+        sub <- assemblyMsg{ code: fmt.Sprintf("%v\n", err) }
       }   
       newSize := fileInfo.Size()
       if newSize != oldSize {
         oldSize = newSize
         content, err := assembler.Assemble(filePath)
         if err != nil {
-          sub <- assemblyMsg{ code: fmt.Sprintf("%v\n", err), err: err }
+          sub <- assemblyMsg{ code: fmt.Sprintf("%v\n", err) }
         }
+
         if content != "" { // change detected
-          sub <- assemblyMsg{ code: content, err: nil }
+          sub <- assemblyMsg{ code: content }
         }
       }
       time.Sleep(1 * time.Second)
@@ -91,6 +91,7 @@ func (m model) Update (msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
   case assemblyMsg:
+      // update model with new content
       m.viewport.SetContent(msg.code) 
       cmds = append(cmds, waitForContent(m.sub))
 
@@ -138,21 +139,9 @@ func (m model) Update (msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-  content, err := assembler.Assemble(m.filePath)
-  if err != nil {
-    return fmt.Sprintf("\n %v", err)
-  }
 	if !m.ready {
 		return "\n  Initializing..."
 	}
-
-  // update model with new content
-  if content != "" {
-    m.content = content
-  } else {
-    return "Content blank"
-  }
-
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
 

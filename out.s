@@ -11,10 +11,13 @@ main:
 	.cfi_offset 6, -16
 	mov	rbp, rsp
 	.cfi_def_cfa_register 6
+	mov	DWORD PTR -8[rbp], 5
 	mov	DWORD PTR -4[rbp], 0
 	add	DWORD PTR -4[rbp], 1
 	add	DWORD PTR -4[rbp], 1
+	mov	edx, DWORD PTR -8[rbp]
 	mov	eax, DWORD PTR -4[rbp]
+	add	eax, edx
 	pop	rbp
 	.cfi_def_cfa 7, 8
 	ret
