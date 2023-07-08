@@ -14,6 +14,7 @@ import (
 )
 const useHighPerformanceRenderer = false
 
+// lipgloss setup
 var (
   titleStyle = func() lipgloss.Style {
     b := lipgloss.RoundedBorder()
@@ -32,7 +33,8 @@ type assemblyMsg struct{
   code string
 }
 
-func createContent(sub chan assemblyMsg, filePath *string) tea.Cmd {
+// calls the Assemble function, and passes a message containing new (updated) code
+func postCode(sub chan assemblyMsg, filePath *string) tea.Cmd {
   return func() tea.Msg {
     var oldSize int64 = 0
     for {
@@ -57,7 +59,8 @@ func createContent(sub chan assemblyMsg, filePath *string) tea.Cmd {
   }
 }
 
-func waitForContent(sub chan assemblyMsg) tea.Cmd {
+// Waits for messages
+func waitForCode(sub chan assemblyMsg) tea.Cmd {
   return func() tea.Msg {
     return assemblyMsg(<-sub)
   }
@@ -73,8 +76,8 @@ type model struct{
 
 func (m model) Init() tea.Cmd {
   return tea.Batch(
-    waitForContent(m.sub),
-    createContent(m.sub, m.filePath),
+    waitForCode(m.sub),
+    postCode(m.sub, m.filePath),
   )
 }
 
@@ -93,7 +96,7 @@ func (m model) Update (msg tea.Msg) (tea.Model, tea.Cmd) {
   case assemblyMsg:
       // update model with new content
       m.viewport.SetContent(msg.code) 
-      cmds = append(cmds, waitForContent(m.sub))
+      cmds = append(cmds, waitForCode(m.sub))
 
 	case tea.WindowSizeMsg:
 		headerHeight := lipgloss.Height(m.headerView())
@@ -145,6 +148,7 @@ func (m model) View() string {
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
 
+// Helper Functions
 func (m model) headerView() string {
 	title := titleStyle.Render("x86 Assembly")
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
@@ -165,12 +169,12 @@ func max(a, b int) int {
 }
 
 func main() {
-  filePath := flag.String("f", "./", "Path to file")
+  filePath := flag.String("f", "./", "Path to file (c or c++)")
   flag.Parse() 
   if *filePath == "./" {
     fmt.Printf("Cannot open file \n")
     os.Exit(1)
-  }	// Load some text for our viewport
+  }	
 
 	p := tea.NewProgram(
 		model{
