@@ -14,8 +14,6 @@ main:
 	mov	DWORD PTR -4[rbp], 0
 	add	DWORD PTR -4[rbp], 1
 	add	DWORD PTR -4[rbp], 1
-	add	DWORD PTR -4[rbp], 1
-	add	DWORD PTR -4[rbp], 1
 	mov	eax, DWORD PTR -4[rbp]
 	pop	rbp
 	.cfi_def_cfa 7, 8

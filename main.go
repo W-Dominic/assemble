@@ -91,8 +91,7 @@ func (m model) Update (msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
   case assemblyMsg:
-    fmt.Printf("Msg found")
-      m.content = msg.code
+      m.viewport.SetContent(msg.code) 
       cmds = append(cmds, waitForContent(m.sub))
 
 	case tea.WindowSizeMsg:
